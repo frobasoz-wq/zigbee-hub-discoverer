@@ -1,0 +1,1384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Do I Already Have a Zigbee Hub? — zigbee.com.au</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #C8DCF0;
+    --bg-card: #FFFFFF;
+    --bg-card2: #EBF3FA;
+    --bg-card3: #F0F6FB;
+    --electric: #0077CC;
+    --electric-light: rgba(0,119,204,0.10);
+    --electric-mid: rgba(0,119,204,0.20);
+    --zigbee-red: #E8003D;
+    --router-green: #5A8A6A;
+    --device-blue: #4A7098;
+    --yes-bg: #EAF7EE;
+    --yes-border: #5A9A6A;
+    --yes-text: #2A6A3A;
+    --caveat-bg: #FFF8E8;
+    --caveat-border: #D4960A;
+    --caveat-text: #7A5800;
+    --no-bg: #FDEEF2;
+    --no-border: #E8003D;
+    --no-text: #8A0020;
+    --text-dark: #141E30;
+    --text-mid: #3A4A60;
+    --text-light: #6A7A90;
+    --border: #C0D0E0;
+    --shadow: rgba(20,40,80,0.10);
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text-dark);
+    overflow-x: hidden;
+  }
+
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: radial-gradient(circle, rgba(0,119,204,0.07) 1px, transparent 1px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes popIn {
+    0%   { opacity: 0; transform: scale(0.92) translateY(10px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+  }
+
+  .tool-wrapper {
+    position: relative;
+    z-index: 1;
+    max-width: 760px;
+    margin: 0 auto;
+    padding: 34px 20px 48px;
+  }
+
+  /* ── HEADER ── */
+  .tool-header {
+    text-align: center;
+    margin-bottom: 28px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .tool-brand {
+    font-family: 'Syne', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--electric);
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+  }
+  .tool-brand::before, .tool-brand::after {
+    content: '';
+    width: 30px; height: 1px;
+    background: var(--electric);
+    opacity: 0.4;
+  }
+
+  .tool-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(24px, 4.5vw, 38px);
+    font-weight: 800;
+    line-height: 1.1;
+    color: var(--text-dark);
+    margin-bottom: 10px;
+  }
+  .tool-title span { color: var(--electric); }
+
+  .tool-subtitle {
+    font-size: 15.5px;
+    color: var(--text-mid);
+    max-width: 500px;
+    margin: 0 auto;
+    line-height: 1.55;
+  }
+
+  /* ── STEP INDICATOR ── */
+  .step-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0;
+    margin-bottom: 24px;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .step-dot {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--bg-card);
+    border: 2px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-light);
+    transition: all 0.3s ease;
+    position: relative;
+    z-index: 1;
+  }
+  .step-dot.active {
+    background: var(--electric);
+    border-color: var(--electric);
+    color: #fff;
+    box-shadow: 0 0 0 4px var(--electric-light);
+  }
+  .step-dot.done {
+    background: var(--router-green);
+    border-color: var(--router-green);
+    color: #fff;
+  }
+  .step-dot.done::after {
+    content: '✓';
+    font-size: 14px;
+  }
+  .step-dot.done span { display: none; }
+
+  .step-line {
+    width: 60px; height: 2px;
+    background: var(--border);
+    transition: background 0.3s;
+  }
+  .step-line.done { background: var(--router-green); }
+
+  .step-label {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    position: absolute;
+    bottom: -20px;
+    white-space: nowrap;
+    left: 50%;
+    transform: translateX(-50%);
+  }
+  .step-dot.active .step-label { color: var(--electric); }
+  .step-dot.done .step-label { color: var(--router-green); }
+
+  /* ── CARD ── */
+  .tool-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 32px 34px 28px;
+    box-shadow: 0 4px 24px var(--shadow);
+    animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  .card-eyebrow {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--electric);
+    margin-bottom: 8px;
+  }
+
+  .card-question {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(17px, 2.6vw, 22px);
+    font-weight: 700;
+    color: var(--text-dark);
+    margin-bottom: 22px;
+    line-height: 1.3;
+  }
+
+  /* ── BRAND GRID ── */
+  .brand-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 11px;
+    margin-bottom: 0;
+  }
+
+  @media (max-width: 520px) {
+    .brand-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+
+  .brand-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 16px 10px 14px;
+    background: var(--bg-card2);
+    border: 1.5px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-family: 'Syne', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text-dark);
+    text-align: center;
+    line-height: 1.2;
+  }
+  .brand-btn:hover {
+    border-color: var(--electric);
+    background: var(--electric-light);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,119,204,0.14);
+  }
+  .brand-btn.selected {
+    border-color: var(--electric);
+    background: var(--electric-light);
+    box-shadow: 0 0 0 1px var(--electric);
+  }
+
+  .brand-logo {
+    font-size: 28px;
+    line-height: 1;
+  }
+
+  /* ── MODEL LIST ── */
+  .model-list {
+    display: grid;
+    gap: 9px;
+  }
+
+  .model-btn {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 18px;
+    background: var(--bg-card2);
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    text-align: left;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text-dark);
+    line-height: 1.3;
+  }
+  .model-btn:hover {
+    border-color: var(--electric);
+    background: var(--electric-light);
+    transform: translateX(3px);
+    box-shadow: 0 3px 14px rgba(0,119,204,0.12);
+  }
+  .model-btn.selected {
+    border-color: var(--electric);
+    background: var(--electric-light);
+    box-shadow: 0 0 0 1px var(--electric);
+  }
+
+  .model-zigbee-dot {
+    width: 10px; height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .dot-yes    { background: var(--router-green); }
+  .dot-caveat { background: var(--caveat-border); }
+  .dot-no     { background: var(--zigbee-red); }
+
+  .model-chevron {
+    margin-left: auto;
+    color: var(--text-light);
+    font-size: 14px;
+    flex-shrink: 0;
+    transition: transform 0.18s;
+  }
+  .model-btn:hover .model-chevron { transform: translateX(3px); color: var(--electric); }
+
+  /* ── NAV ── */
+  .nav-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+    gap: 12px;
+  }
+
+  .btn-back {
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    transition: color 0.18s;
+    padding: 10px 0;
+  }
+  .btn-back:hover { color: var(--text-dark); }
+
+  /* ── RESULT ── */
+  .result-card {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 32px 34px 28px;
+    box-shadow: 0 4px 24px var(--shadow);
+    animation: popIn 0.45s cubic-bezier(0.4,0,0.2,1) both;
+  }
+
+  .result-device-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--bg-card2);
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--text-mid);
+    margin-bottom: 16px;
+  }
+
+  .result-status-banner {
+    border-radius: 12px;
+    padding: 16px 20px;
+    margin-bottom: 20px;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+  }
+  .banner-yes    { background: var(--yes-bg);    border: 1.5px solid var(--yes-border); }
+  .banner-caveat { background: var(--caveat-bg); border: 1.5px solid var(--caveat-border); }
+  .banner-no     { background: var(--no-bg);     border: 1.5px solid var(--no-border); }
+
+  .banner-icon { font-size: 26px; flex-shrink: 0; line-height: 1; margin-top: 2px; }
+
+  .banner-text-wrap { flex: 1; }
+
+  .banner-headline {
+    font-family: 'Syne', sans-serif;
+    font-size: 17px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .banner-yes    .banner-headline { color: var(--yes-text); }
+  .banner-caveat .banner-headline { color: var(--caveat-text); }
+  .banner-no     .banner-headline { color: var(--no-text); }
+
+  .banner-sub {
+    font-size: 13.5px;
+    font-weight: 500;
+    line-height: 1.4;
+  }
+  .banner-yes    .banner-sub { color: var(--yes-text); opacity: 0.85; }
+  .banner-caveat .banner-sub { color: var(--caveat-text); opacity: 0.85; }
+  .banner-no     .banner-sub { color: var(--no-text); opacity: 0.85; }
+
+  .result-body {
+    font-size: 15px;
+    color: var(--text-mid);
+    line-height: 1.75;
+    margin-bottom: 22px;
+  }
+  .result-body strong { color: var(--text-dark); font-weight: 600; }
+
+  /* Capability chips */
+  .caps-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+
+  .caps-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 22px;
+  }
+
+  .cap-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border-radius: 100px;
+    font-size: 13px;
+    font-weight: 500;
+    border: 1px solid;
+  }
+  .cap-chip.good {
+    background: var(--yes-bg);
+    border-color: var(--yes-border);
+    color: var(--yes-text);
+  }
+  .cap-chip.warn {
+    background: var(--caveat-bg);
+    border-color: var(--caveat-border);
+    color: var(--caveat-text);
+  }
+  .cap-chip.bad {
+    background: var(--no-bg);
+    border-color: var(--no-border);
+    color: var(--no-text);
+  }
+
+  /* Next steps */
+  .divider {
+    height: 1px;
+    background: var(--border);
+    margin: 20px 0;
+  }
+
+  .nextsteps-title {
+    font-family: 'Syne', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--text-light);
+    margin-bottom: 10px;
+  }
+
+  .nextsteps-grid { display: grid; gap: 8px; margin-bottom: 20px; }
+
+  .nextstep-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 16px;
+    background: var(--bg-card2);
+    border: 1.5px solid var(--border);
+    border-radius: 11px;
+    text-decoration: none;
+    color: var(--text-dark);
+    font-size: 14.5px;
+    transition: all 0.18s;
+    line-height: 1.3;
+  }
+  .nextstep-link:hover {
+    border-color: var(--electric);
+    background: var(--electric-light);
+    transform: translateX(3px);
+  }
+  .nextstep-section {
+    font-family: 'Syne', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--electric);
+    display: block;
+    margin-bottom: 1px;
+  }
+  .nextstep-icon { font-size: 17px; flex-shrink: 0; width: 26px; text-align: center; }
+  .nextstep-arrow { margin-left: auto; color: var(--electric); opacity: 0.45; font-size: 14px; flex-shrink: 0; }
+
+  /* Try another / restart */
+  .btn-row {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn-secondary {
+    flex: 1;
+    font-family: 'Syne', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-mid);
+    background: none;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 18px;
+    cursor: pointer;
+    transition: all 0.18s;
+    text-align: center;
+    min-width: 140px;
+  }
+  .btn-secondary:hover { border-color: var(--electric); color: var(--electric); }
+
+  /* ── FOOTER ── */
+  .tool-footer {
+    text-align: center;
+    margin-top: 20px;
+    font-size: 12px;
+    color: var(--text-light);
+    animation: fadeDown 0.6s 0.3s ease both;
+  }
+  .tool-footer a { color: var(--electric); text-decoration: none; }
+
+  @media (max-width: 600px) {
+    .tool-card, .result-card { padding: 22px 18px 20px; }
+    .tool-wrapper { padding: 20px 14px 32px; }
+    .brand-grid { grid-template-columns: repeat(2,1fr); }
+  }
+</style>
+</head>
+<body>
+
+<div class="tool-wrapper">
+
+  <div class="tool-header">
+    <div class="tool-brand">zigbee.com.au</div>
+    <h1 class="tool-title">Do I Already Have a<br><span>Zigbee Hub?</span></h1>
+    <p class="tool-subtitle">Select your device below and we'll tell you instantly whether you already have Zigbee — and what it can do.</p>
+  </div>
+
+  <!-- Step indicator -->
+  <div class="step-indicator" id="stepIndicator">
+    <div class="step-dot active" id="dot1" style="position:relative">
+      <span>1</span>
+      <span class="step-label">Brand</span>
+    </div>
+    <div class="step-line" id="line1"></div>
+    <div class="step-dot" id="dot2" style="position:relative">
+      <span>2</span>
+      <span class="step-label">Device</span>
+    </div>
+    <div class="step-line" id="line2"></div>
+    <div class="step-dot" id="dot3" style="position:relative">
+      <span>3</span>
+      <span class="step-label">Result</span>
+    </div>
+  </div>
+
+  <div id="toolArea"></div>
+
+  <div class="tool-footer">
+    Built for beginners by <a href="https://zigbee.com.au">zigbee.com.au</a> — Australia's Zigbee smart home guide.
+  </div>
+
+</div>
+
+<script>
+// ── DATA ──
+const brands = [
+  { id: 'amazon',   label: 'Amazon',        logo: '🔶' },
+  { id: 'philips',  label: 'Philips Hue',   logo: '💡' },
+  { id: 'samsung',  label: 'Samsung',       logo: '🔷' },
+  { id: 'aqara',    label: 'Aqara',         logo: '🟤' },
+  { id: 'sonoff',   label: 'Sonoff',        logo: '🟠' },
+  { id: 'ikea',     label: 'IKEA',          logo: '🟡' },
+  { id: 'homeasst', label: 'Home Assistant',logo: '🟢' },
+  { id: 'google',   label: 'Google',        logo: '🔴' },
+  { id: 'apple',    label: 'Apple',         logo: '⚫' },
+  { id: 'tuya',     label: 'Tuya',          logo: '🟣' },
+  { id: 'hubitat',  label: 'Hubitat',       logo: '⚙️' },
+];
+
+const models = {
+  amazon: [
+    {
+      name: 'Echo (4th gen)',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Built-in Zigbee coordinator',
+      body: 'The 4th generation Echo has a full Zigbee coordinator built in. You can pair most Zigbee 3.0 devices directly through the Alexa app — no extra hub needed. It\'s one of the best entry-level coordinators available and you likely already have it set up.',
+      caps: [
+        { label: 'Zigbee 3.0 support', type: 'good' },
+        { label: 'Pairs via Alexa app', type: 'good' },
+        { label: 'Local + cloud control', type: 'good' },
+        { label: 'No extra hub needed', type: 'good' },
+        { label: 'Limited to ~50 devices', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Plan', icon: '🗺️', text: 'How to plan your Zigbee network', url: 'https://zigbee.com.au/plan/network-map' },
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee devices to pair with Echo', url: 'https://zigbee.com.au/products' },
+      ]
+    },
+    {
+      name: 'Echo (3rd gen)',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Built-in Zigbee coordinator',
+      body: 'The 3rd generation Echo has a built-in Zigbee coordinator. It pairs with most Zigbee devices directly via the Alexa app. Slightly older than the 4th gen but still a fully capable coordinator for everyday use.',
+      caps: [
+        { label: 'Zigbee coordinator built in', type: 'good' },
+        { label: 'Pairs via Alexa app', type: 'good' },
+        { label: 'Works with most Zigbee 3.0 devices', type: 'good' },
+        { label: 'Older firmware — some new devices may not pair', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Plan', icon: '🗺️', text: 'How to plan your Zigbee network', url: 'https://zigbee.com.au/plan/network-map' },
+      ]
+    },
+    {
+      name: 'Echo Plus (1st or 2nd gen)',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'The original Echo with Zigbee built in',
+      body: 'The Echo Plus was Amazon\'s first device with a built-in Zigbee coordinator — launched specifically to make Zigbee accessible to everyday users. Both generations work as coordinators. It\'s older hardware now but still perfectly functional for a starter network.',
+      caps: [
+        { label: 'Full Zigbee coordinator', type: 'good' },
+        { label: 'Pairs via Alexa app', type: 'good' },
+        { label: 'Older hardware — limited future updates', type: 'warn' },
+        { label: 'Discontinued (but still works)', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Learn', icon: '📚', text: 'What is a Zigbee coordinator?', url: 'https://zigbee.com.au/learn/what-is-zigbee' },
+      ]
+    },
+    {
+      name: 'Echo Show 10',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Built-in Zigbee coordinator',
+      body: 'The Echo Show 10 includes a full Zigbee coordinator alongside its large touchscreen display. You can pair and control Zigbee devices directly through Alexa — and use the screen to view dashboards and camera feeds from your smart home.',
+      caps: [
+        { label: 'Full Zigbee coordinator', type: 'good' },
+        { label: 'Touchscreen smart home dashboard', type: 'good' },
+        { label: 'Pairs via Alexa app', type: 'good' },
+        { label: 'No extra hub needed', type: 'good' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee devices for beginners', url: 'https://zigbee.com.au/products' },
+      ]
+    },
+    {
+      name: 'Echo Studio',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Built-in Zigbee coordinator',
+      body: 'Amazon\'s premium speaker, the Echo Studio, also packs a full Zigbee coordinator. It\'s identical in Zigbee capability to the Echo 4th gen — you can pair devices directly through Alexa without any additional hub.',
+      caps: [
+        { label: 'Full Zigbee coordinator', type: 'good' },
+        { label: 'Pairs via Alexa app', type: 'good' },
+        { label: 'No extra hub needed', type: 'good' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Plan', icon: '🗺️', text: 'How to plan your Zigbee network', url: 'https://zigbee.com.au/plan/network-map' },
+      ]
+    },
+    {
+      name: 'Echo Dot (any generation)',
+      status: 'no',
+      headline: 'No Zigbee in the Echo Dot',
+      sub: 'WiFi and Bluetooth only',
+      body: 'The Echo Dot — in any generation — does not include a Zigbee radio. It uses WiFi and Bluetooth only. If you want to use Zigbee devices, you\'ll need to pair the Dot with a hub that does have Zigbee, or upgrade to an Echo (4th gen), Echo Plus, or Echo Studio.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'WiFi + Bluetooth only', type: 'warn' },
+        { label: 'Works as Alexa voice controller', type: 'good' },
+      ],
+      links: [
+        { section: 'Learn', icon: '📚', text: 'What is a Zigbee hub and why do I need one?', url: 'https://zigbee.com.au/learn/what-is-zigbee' },
+        { section: 'Products', icon: '🛍️', text: 'Best beginner Zigbee hubs', url: 'https://zigbee.com.au/products/hubs' },
+      ]
+    },
+    {
+      name: 'Echo Show 5 / Echo Show 8',
+      status: 'no',
+      headline: 'No Zigbee in the Echo Show 5 or 8',
+      sub: 'WiFi and Bluetooth only',
+      body: 'The Echo Show 5 and Echo Show 8 do not have a Zigbee radio — only the larger Echo Show 10 includes one. These devices work great as Alexa displays and voice controllers, but you\'ll need a separate Zigbee hub to pair Zigbee devices.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'WiFi + Bluetooth only', type: 'warn' },
+        { label: 'Works as Alexa voice/display controller', type: 'good' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best beginner Zigbee hubs', url: 'https://zigbee.com.au/products/hubs' },
+        { section: 'Learn', icon: '📚', text: 'What is a Zigbee hub?', url: 'https://zigbee.com.au/learn/what-is-zigbee' },
+      ]
+    },
+    {
+      name: 'Echo Pop',
+      status: 'no',
+      headline: 'No Zigbee in the Echo Pop',
+      sub: 'WiFi and Bluetooth only',
+      body: 'The Echo Pop is Amazon\'s compact budget speaker — it doesn\'t include a Zigbee radio. It\'s a capable Alexa speaker but you\'ll need a separate hub for Zigbee. The Echo (4th gen) is only slightly more expensive and includes full Zigbee support.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'WiFi + Bluetooth only', type: 'warn' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best beginner Zigbee hubs', url: 'https://zigbee.com.au/products/hubs' },
+      ]
+    },
+  ],
+
+  philips: [
+    {
+      name: 'Hue Bridge v2 (square, white)',
+      status: 'caveat',
+      headline: 'Yes — with some limitations',
+      sub: 'Zigbee coordinator, Hue ecosystem focused',
+      body: 'The square white Hue Bridge v2 is a full Zigbee coordinator — and an excellent one. It runs locally with no cloud required for core functions. It works brilliantly within the Hue ecosystem and with certified partner devices. However, it\'s designed primarily for Philips Hue and approved partners — it won\'t pair with arbitrary Zigbee devices the way a more open hub will.',
+      caps: [
+        { label: 'Full Zigbee coordinator', type: 'good' },
+        { label: 'Runs locally — no cloud needed', type: 'good' },
+        { label: 'Apple Home, Alexa & Google support', type: 'good' },
+        { label: 'Limited to Hue + certified partners', type: 'warn' },
+        { label: 'Won\'t pair generic Zigbee devices', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Products', icon: '🛍️', text: 'Best devices compatible with Hue Bridge', url: 'https://zigbee.com.au/products/hue-compatible' },
+        { section: 'Plan', icon: '🗺️', text: 'Planning a Hue-based smart home', url: 'https://zigbee.com.au/plan/network-map' },
+      ]
+    },
+    {
+      name: 'Hue Bridge v1 (round, black)',
+      status: 'no',
+      headline: 'No — the v1 Bridge is no longer supported',
+      sub: 'Discontinued and cloud-dependent',
+      body: 'The original round Hue Bridge v1 used Zigbee but was heavily cloud-dependent and was discontinued by Philips in 2020. It no longer receives updates and many features no longer work. It\'s time to replace it — the current square Hue Bridge v2 is the upgrade, or consider a more open hub like the Aqara M2.',
+      caps: [
+        { label: 'Discontinued — no longer supported', type: 'bad' },
+        { label: 'Cloud-dependent — cloud no longer active', type: 'bad' },
+        { label: 'No longer receives updates', type: 'bad' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs to replace it with', url: 'https://zigbee.com.au/products/hubs' },
+        { section: 'Learn', icon: '📚', text: 'What to look for in a Zigbee hub', url: 'https://zigbee.com.au/learn/what-is-zigbee' },
+      ]
+    },
+  ],
+
+  samsung: [
+    {
+      name: 'SmartThings Hub (v2 or v3)',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Full Zigbee coordinator',
+      body: 'The SmartThings Hub v2 and v3 are full Zigbee coordinators with a wide device compatibility list. They support a large number of Zigbee devices from different brands and have a solid community around them. Samsung has been transitioning SmartThings toward cloud-based control — worth being aware of for long-term planning.',
+      caps: [
+        { label: 'Full Zigbee coordinator', type: 'good' },
+        { label: 'Wide device compatibility', type: 'good' },
+        { label: 'Works with Alexa & Google', type: 'good' },
+        { label: 'Increasingly cloud-dependent', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Plan', icon: '🗺️', text: 'How to plan your network', url: 'https://zigbee.com.au/plan/network-map' },
+      ]
+    },
+    {
+      name: 'SmartThings Station',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Built-in Zigbee + wireless charger',
+      body: 'The SmartThings Station is Samsung\'s modern hub — it includes a full Zigbee coordinator plus a built-in wireless charger for your phone. It\'s a clean, modern device that doubles as a bedside or desk hub. Good Zigbee device support via the SmartThings app.',
+      caps: [
+        { label: 'Full Zigbee coordinator', type: 'good' },
+        { label: 'Modern compact design', type: 'good' },
+        { label: 'Works with Alexa & Google', type: 'good' },
+        { label: 'Cloud-dependent', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee devices for SmartThings', url: 'https://zigbee.com.au/products' },
+      ]
+    },
+    {
+      name: 'SmartThings Find Tag',
+      status: 'no',
+      headline: 'No — the SmartThings Tag has no Zigbee',
+      sub: 'Bluetooth tracking tag only',
+      body: 'The SmartThings Find Tag is a small Bluetooth tracking tag — similar to an Apple AirTag. It has no Zigbee radio and cannot act as a hub. If you want Zigbee capability with Samsung, you need a SmartThings Hub or SmartThings Station.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'Bluetooth tracking only', type: 'warn' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs for beginners', url: 'https://zigbee.com.au/products/hubs' },
+      ]
+    },
+  ],
+
+  aqara: [
+    {
+      name: 'Hub M2',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Full local Zigbee coordinator — recommended',
+      body: 'The Aqara Hub M2 is one of our top recommendations for beginners and intermediate users alike. It runs fully locally — no cloud required for automations — and supports Apple Home, Alexa and Google. Excellent range of compatible Aqara sensors and growing third-party device support.',
+      caps: [
+        { label: 'Full local Zigbee coordinator', type: 'good' },
+        { label: 'Apple Home + Alexa + Google', type: 'good' },
+        { label: 'Runs fully offline', type: 'good' },
+        { label: 'Large Aqara sensor ecosystem', type: 'good' },
+        { label: 'Best suited to Aqara devices', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Products', icon: '🛍️', text: 'Best Aqara devices to pair with M2', url: 'https://zigbee.com.au/products/aqara' },
+        { section: 'Plan', icon: '🗺️', text: 'How to plan your network', url: 'https://zigbee.com.au/plan/network-map' },
+      ]
+    },
+    {
+      name: 'Hub M3',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Aqara\'s latest hub — Matter + Zigbee',
+      body: 'The Aqara Hub M3 is the latest and most capable Aqara hub. It supports both Zigbee and the new Matter standard — making it highly future-proof. Runs locally, supports Apple Home, Alexa and Google, and has excellent build quality.',
+      caps: [
+        { label: 'Full local Zigbee coordinator', type: 'good' },
+        { label: 'Matter support (future-proof)', type: 'good' },
+        { label: 'Apple Home + Alexa + Google', type: 'good' },
+        { label: 'Runs fully offline', type: 'good' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Learn', icon: '📚', text: 'What is Matter and how does it relate to Zigbee?', url: 'https://zigbee.com.au/learn/matter' },
+      ]
+    },
+    {
+      name: 'Hub E1',
+      status: 'caveat',
+      headline: 'Yes — with a device limit',
+      sub: 'Zigbee coordinator, best for small homes',
+      body: 'The Aqara Hub E1 is a compact, affordable Zigbee coordinator — great for apartments and small homes. It runs locally and supports Apple Home, Alexa and Google. The main limitation is a device cap of around 32 devices, which is fine for smaller setups but will become a constraint as your network grows.',
+      caps: [
+        { label: 'Local Zigbee coordinator', type: 'good' },
+        { label: 'Apple Home + Alexa + Google', type: 'good' },
+        { label: 'Compact & affordable', type: 'good' },
+        { label: '~32 device limit', type: 'warn' },
+        { label: 'Not ideal for large homes', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Plan', icon: '📍', text: 'How many devices do you need?', url: 'https://zigbee.com.au/plan/device-count' },
+      ]
+    },
+    {
+      name: 'Hub G2H Pro (camera hub)',
+      status: 'caveat',
+      headline: 'Yes — Zigbee built into the camera',
+      sub: 'Functional but best as a secondary hub',
+      body: 'The Aqara G2H Pro is primarily a security camera that happens to include a Zigbee coordinator. It works — and is a clever dual-purpose device — but it has the same ~32 device limit as the E1, and positioning is driven by camera placement rather than optimal hub placement. Best used as a secondary hub alongside an M2 or M3.',
+      caps: [
+        { label: 'Zigbee coordinator built in', type: 'good' },
+        { label: 'Doubles as security camera', type: 'good' },
+        { label: '~32 device limit', type: 'warn' },
+        { label: 'Placement constrained by camera angle', type: 'warn' },
+      ],
+      links: [
+        { section: 'Plan', icon: '🗺️', text: 'How to plan hub placement', url: 'https://zigbee.com.au/plan/device-placement' },
+        { section: 'Products', icon: '🛍️', text: 'Comparing Aqara hubs', url: 'https://zigbee.com.au/products/aqara' },
+      ]
+    },
+    {
+      name: 'Hub G3 (camera hub)',
+      status: 'caveat',
+      headline: 'Yes — Zigbee built into the camera',
+      sub: 'Functional but best as a secondary hub',
+      body: 'Like the G2H Pro, the Aqara G3 is a camera with a built-in Zigbee coordinator. It\'s a more premium camera with better image quality, but the same hub caveats apply — device limit and placement driven by camera positioning. Good as a secondary hub or in a small single-room setup.',
+      caps: [
+        { label: 'Zigbee coordinator built in', type: 'good' },
+        { label: 'Premium camera quality', type: 'good' },
+        { label: '~32 device limit', type: 'warn' },
+        { label: 'Best as secondary hub', type: 'warn' },
+      ],
+      links: [
+        { section: 'Plan', icon: '🗺️', text: 'How to plan hub placement', url: 'https://zigbee.com.au/plan/device-placement' },
+      ]
+    },
+  ],
+
+  sonoff: [
+    {
+      name: 'iHost',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Full local Zigbee coordinator',
+      body: 'The Sonoff iHost is a capable local Zigbee coordinator with a built-in interface — no separate computer needed. It runs completely offline, has a good device compatibility list, and is well suited to users who want more control than a basic app hub but aren\'t ready for full Home Assistant.',
+      caps: [
+        { label: 'Full local Zigbee coordinator', type: 'good' },
+        { label: 'No cloud required', type: 'good' },
+        { label: 'Built-in web interface', type: 'good' },
+        { label: 'Good Sonoff device compatibility', type: 'good' },
+        { label: 'Smaller community than Home Assistant', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Products', icon: '🛍️', text: 'Best Sonoff Zigbee devices', url: 'https://zigbee.com.au/products/sonoff' },
+      ]
+    },
+    {
+      name: 'ZBDongle-E',
+      status: 'caveat',
+      headline: 'Yes — but it needs a computer to run',
+      sub: 'Coordinator dongle — requires Zigbee2MQTT or Home Assistant',
+      body: 'The Sonoff ZBDongle-E is an excellent Zigbee coordinator — but it\'s a USB dongle, not a standalone hub. To use it, you need to plug it into a computer, Raspberry Pi, or Home Assistant device running Zigbee2MQTT or ZHA. If you have that setup, it\'s one of the best coordinators available. If not, it won\'t work on its own.',
+      caps: [
+        { label: 'Excellent Zigbee coordinator chip', type: 'good' },
+        { label: 'Best-in-class for Zigbee2MQTT', type: 'good' },
+        { label: 'Requires a host computer or Pi', type: 'warn' },
+        { label: 'Not a standalone hub', type: 'warn' },
+        { label: 'Technical setup required', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: 'Setting up ZBDongle-E with Zigbee2MQTT', url: 'https://zigbee.com.au/build/zigbee2mqtt' },
+        { section: 'Learn', icon: '📚', text: 'What is Zigbee2MQTT?', url: 'https://zigbee.com.au/learn/zigbee2mqtt' },
+      ]
+    },
+    {
+      name: 'ZBDongle-P',
+      status: 'caveat',
+      headline: 'Yes — but it needs a computer to run',
+      sub: 'Coordinator dongle — older variant of ZBDongle-E',
+      body: 'The ZBDongle-P is the older variant of Sonoff\'s Zigbee USB dongle. Same concept as the ZBDongle-E — plug into a host computer running Zigbee2MQTT or ZHA. The E variant is the current recommended version, but the P still works well. Not a standalone hub.',
+      caps: [
+        { label: 'Zigbee coordinator chip', type: 'good' },
+        { label: 'Works with Zigbee2MQTT / ZHA', type: 'good' },
+        { label: 'Older chip than ZBDongle-E', type: 'warn' },
+        { label: 'Requires a host computer or Pi', type: 'warn' },
+        { label: 'Not a standalone hub', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: 'Setting up a Zigbee dongle with Home Assistant', url: 'https://zigbee.com.au/build/zigbee2mqtt' },
+      ]
+    },
+    {
+      name: 'NSPanel Pro',
+      status: 'caveat',
+      headline: 'Yes — with ecosystem limitations',
+      sub: 'Zigbee built in, tied to eWeLink',
+      body: 'The Sonoff NSPanel Pro is a wall-mounted touchscreen panel with a built-in Zigbee coordinator. It works well within the Sonoff/eWeLink ecosystem but has limited support for third-party Zigbee devices. If you\'re building a mixed-brand network, it will frustrate you. Best used as a control panel within a primarily Sonoff setup.',
+      caps: [
+        { label: 'Zigbee coordinator built in', type: 'good' },
+        { label: 'Wall-mounted touchscreen', type: 'good' },
+        { label: 'Tied to eWeLink ecosystem', type: 'warn' },
+        { label: 'Limited third-party device support', type: 'warn' },
+      ],
+      links: [
+        { section: 'Plan', icon: '🗺️', text: 'Choosing the right Zigbee hub', url: 'https://zigbee.com.au/plan/choosing-hub' },
+        { section: 'Products', icon: '🛍️', text: 'Best Sonoff Zigbee devices', url: 'https://zigbee.com.au/products/sonoff' },
+      ]
+    },
+  ],
+
+  ikea: [
+    {
+      name: 'Dirigera',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'IKEA\'s current Zigbee coordinator',
+      body: 'The IKEA Dirigera is IKEA\'s current smart home hub and a solid Zigbee coordinator. It has a clean app, good local processing, and works well within the IKEA ecosystem. It supports Apple Home, Alexa and Google. Primarily designed for IKEA devices but pairs with some third-party Zigbee 3.0 devices too.',
+      caps: [
+        { label: 'Full Zigbee coordinator', type: 'good' },
+        { label: 'Apple Home + Alexa + Google', type: 'good' },
+        { label: 'Clean modern app', type: 'good' },
+        { label: 'Best suited to IKEA devices', type: 'warn' },
+        { label: 'Limited third-party device support', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Products', icon: '🛍️', text: 'Best IKEA Zigbee devices', url: 'https://zigbee.com.au/products/ikea' },
+      ]
+    },
+    {
+      name: 'TRÅDFRI Gateway (old, round)',
+      status: 'caveat',
+      headline: 'Yes — but it\'s being phased out',
+      sub: 'Zigbee coordinator, no longer updated',
+      body: 'The original round IKEA TRÅDFRI Gateway is a Zigbee coordinator and still works for controlling IKEA lights and devices. However, IKEA has moved on to the Dirigera and the TRÅDFRI Gateway is no longer receiving major updates. It\'s limited to IKEA devices and the app experience is dated. It will keep working for now, but planning an upgrade to Dirigera makes sense.',
+      caps: [
+        { label: 'Zigbee coordinator', type: 'good' },
+        { label: 'Controls IKEA devices', type: 'good' },
+        { label: 'No longer receiving major updates', type: 'warn' },
+        { label: 'Limited to IKEA ecosystem only', type: 'warn' },
+        { label: 'Being phased out — upgrade recommended', type: 'warn' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Upgrading to IKEA Dirigera', url: 'https://zigbee.com.au/products/ikea' },
+        { section: 'Plan', icon: '🗺️', text: 'Planning a migration to a new hub', url: 'https://zigbee.com.au/plan/network-map' },
+      ]
+    },
+  ],
+
+  homeasst: [
+    {
+      name: 'Home Assistant Green',
+      status: 'caveat',
+      headline: 'Almost — needs a Zigbee dongle',
+      sub: 'No built-in Zigbee radio',
+      body: 'The Home Assistant Green is an excellent plug-and-play Home Assistant device, but it does not have a built-in Zigbee radio. To add Zigbee, you simply plug a <strong>Sonoff ZBDongle-E</strong> into one of the USB ports and set up ZHA or Zigbee2MQTT. Once done, it becomes one of the most capable Zigbee hubs available.',
+      caps: [
+        { label: 'Excellent Home Assistant hardware', type: 'good' },
+        { label: 'Zigbee dongle adds full coordinator capability', type: 'good' },
+        { label: 'No built-in Zigbee radio', type: 'warn' },
+        { label: 'Requires ZBDongle-E + software setup', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: 'Adding a Zigbee dongle to Home Assistant Green', url: 'https://zigbee.com.au/build/zigbee2mqtt' },
+        { section: 'Products', icon: '🛍️', text: 'Sonoff ZBDongle-E — the recommended dongle', url: 'https://zigbee.com.au/products/coordinators' },
+      ]
+    },
+    {
+      name: 'Home Assistant Yellow',
+      status: 'yes',
+      headline: 'Yes — Zigbee is built right in!',
+      sub: 'Built-in Silicon Labs Zigbee radio',
+      body: 'The Home Assistant Yellow has a Silicon Labs MGM210P Zigbee radio built directly onto the board — no dongle needed. Just set up ZHA or Zigbee2MQTT in Home Assistant and you\'re ready to pair devices. It\'s the most capable and tinkerer-friendly Zigbee hub on this list.',
+      caps: [
+        { label: 'Built-in Zigbee radio (Silicon Labs)', type: 'good' },
+        { label: 'No dongle needed', type: 'good' },
+        { label: 'Full Home Assistant capability', type: 'good' },
+        { label: 'Virtually unlimited device support', type: 'good' },
+        { label: 'Technical setup required', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: 'Setting up Zigbee2MQTT on Home Assistant Yellow', url: 'https://zigbee.com.au/build/zigbee2mqtt' },
+        { section: 'Create', icon: '⚡', text: 'Getting started with automations', url: 'https://zigbee.com.au/create' },
+      ]
+    },
+    {
+      name: 'Home Assistant (on Raspberry Pi)',
+      status: 'caveat',
+      headline: 'Almost — needs a Zigbee dongle',
+      sub: 'Raspberry Pi has no built-in Zigbee radio',
+      body: 'A Raspberry Pi running Home Assistant is a popular and powerful setup, but the Pi itself has no Zigbee radio. You\'ll need to plug in a USB Zigbee coordinator — the <strong>Sonoff ZBDongle-E</strong> is the top recommendation. With that in place, it\'s an incredibly capable Zigbee hub with full Zigbee2MQTT support.',
+      caps: [
+        { label: 'Powerful Home Assistant platform', type: 'good' },
+        { label: 'ZBDongle-E adds full Zigbee capability', type: 'good' },
+        { label: 'No built-in Zigbee radio', type: 'warn' },
+        { label: 'Technical setup required', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: 'Setting up ZBDongle-E with Zigbee2MQTT', url: 'https://zigbee.com.au/build/zigbee2mqtt' },
+      ]
+    },
+  ],
+
+  google: [
+    {
+      name: 'Nest Hub (any generation)',
+      status: 'no',
+      headline: 'No Zigbee in the Nest Hub',
+      sub: 'Thread and Matter only',
+      body: 'Google\'s Nest Hub devices support Thread and the newer Matter standard — but not Zigbee. They cannot act as a Zigbee coordinator or pair with Zigbee devices. If you want to use Zigbee, you\'ll need a separate Zigbee hub. The good news: a Nest Hub pairs nicely alongside a Zigbee hub via Matter/Google Home.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'Thread + Matter supported', type: 'good' },
+        { label: 'Works alongside a separate Zigbee hub', type: 'good' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs for beginners', url: 'https://zigbee.com.au/products/hubs' },
+        { section: 'Learn', icon: '📚', text: 'Zigbee vs Thread vs Matter — what\'s the difference?', url: 'https://zigbee.com.au/learn/protocols' },
+      ]
+    },
+    {
+      name: 'Nest Mini',
+      status: 'no',
+      headline: 'No Zigbee in the Nest Mini',
+      sub: 'WiFi and Bluetooth only',
+      body: 'The Google Nest Mini is a compact voice assistant speaker — it has no Zigbee radio. WiFi and Bluetooth only. It\'s a great companion to a Zigbee hub but cannot act as one itself.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'WiFi + Bluetooth only', type: 'warn' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs for beginners', url: 'https://zigbee.com.au/products/hubs' },
+      ]
+    },
+    {
+      name: 'Nest Hub Max',
+      status: 'no',
+      headline: 'No Zigbee in the Nest Hub Max',
+      sub: 'Thread and Matter only',
+      body: 'Like other Nest Hub devices, the Hub Max supports Thread and Matter — but not Zigbee. It\'s a large, capable Google Home display but cannot pair with Zigbee devices directly.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'Thread + Matter supported', type: 'good' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs for beginners', url: 'https://zigbee.com.au/products/hubs' },
+      ]
+    },
+    {
+      name: 'Google Home (original)',
+      status: 'no',
+      headline: 'No Zigbee in the original Google Home',
+      sub: 'WiFi and Bluetooth only',
+      body: 'The original Google Home speaker has no Zigbee radio — just WiFi and Bluetooth. A capable voice assistant, but not a Zigbee hub. You\'ll need a separate coordinator to use Zigbee devices.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'WiFi + Bluetooth only', type: 'warn' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs for beginners', url: 'https://zigbee.com.au/products/hubs' },
+      ]
+    },
+  ],
+
+  apple: [
+    {
+      name: 'HomePod (1st or 2nd gen)',
+      status: 'no',
+      headline: 'No Zigbee in the HomePod',
+      sub: 'Thread and Matter only',
+      body: 'Apple\'s HomePod supports Thread and Matter — useful for smart home control — but has no Zigbee radio. It can act as a Thread border router and Apple Home hub, but cannot pair with Zigbee devices directly. For Zigbee, you\'ll need a separate coordinator alongside it.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'Thread border router built in', type: 'good' },
+        { label: 'Apple Home hub', type: 'good' },
+        { label: 'Works alongside a Zigbee hub', type: 'good' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs that work with Apple Home', url: 'https://zigbee.com.au/products/hubs' },
+        { section: 'Learn', icon: '📚', text: 'Zigbee vs Thread vs Matter — explained', url: 'https://zigbee.com.au/learn/protocols' },
+      ]
+    },
+    {
+      name: 'HomePod mini',
+      status: 'no',
+      headline: 'No Zigbee in the HomePod mini',
+      sub: 'Thread only — no Zigbee',
+      body: 'The HomePod mini supports Thread and acts as an Apple Home hub — but has no Zigbee radio. Like the full HomePod, it\'s a great companion to a Zigbee hub (especially one that supports Apple Home like the Aqara M2 or M3), but cannot pair Zigbee devices itself.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'Thread border router built in', type: 'good' },
+        { label: 'Apple Home hub', type: 'good' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best Zigbee hubs for Apple Home users', url: 'https://zigbee.com.au/products/apple-home' },
+      ]
+    },
+  ],
+
+  tuya: [
+    {
+      name: 'Tuya Zigbee Gateway (ZG-001 or similar)',
+      status: 'caveat',
+      headline: 'Yes — with cloud and ecosystem limitations',
+      sub: 'Zigbee coordinator, Tuya/Smart Life ecosystem only',
+      body: 'Tuya\'s Zigbee Gateway is a real Zigbee coordinator — but it\'s fully cloud-dependent and locked to the Tuya/Smart Life ecosystem. It works well with Tuya-branded devices but won\'t pair with devices from Aqara, Sonoff, Philips Hue, or other brands. Automations require an active internet connection.',
+      caps: [
+        { label: 'Zigbee coordinator', type: 'good' },
+        { label: 'Works with Tuya/Smart Life devices', type: 'good' },
+        { label: 'Affordable entry point', type: 'good' },
+        { label: 'Fully cloud-dependent', type: 'warn' },
+        { label: 'Tuya ecosystem only — no cross-brand pairing', type: 'warn' },
+        { label: 'No internet = no automations', type: 'warn' },
+      ],
+      links: [
+        { section: 'Learn', icon: '📚', text: 'Cloud vs local — why it matters', url: 'https://zigbee.com.au/learn/local-vs-cloud' },
+        { section: 'Products', icon: '🛍️', text: 'More capable Zigbee hub options', url: 'https://zigbee.com.au/products/hubs' },
+      ]
+    },
+    {
+      name: 'Tuya WiFi Gateway (non-Zigbee)',
+      status: 'no',
+      headline: 'No — this is a WiFi gateway, not Zigbee',
+      sub: 'WiFi to cloud bridge only',
+      body: 'Some Tuya gateways are WiFi-only cloud bridges — they connect WiFi smart devices to the Tuya/Smart Life cloud but have no Zigbee radio. Check the model name or packaging for "Zigbee" — if it\'s not listed, it won\'t pair with Zigbee devices.',
+      caps: [
+        { label: 'No Zigbee radio', type: 'bad' },
+        { label: 'WiFi cloud bridge only', type: 'warn' },
+        { label: 'Check packaging for "Zigbee" label', type: 'warn' },
+      ],
+      links: [
+        { section: 'Products', icon: '🛍️', text: 'Best beginner Zigbee hubs', url: 'https://zigbee.com.au/products/hubs' },
+        { section: 'Learn', icon: '📚', text: 'What is a Zigbee hub?', url: 'https://zigbee.com.au/learn/what-is-zigbee' },
+      ]
+    },
+  ],
+
+  hubitat: [
+    {
+      name: 'Hubitat Elevation (C-7 or C-8)',
+      status: 'yes',
+      headline: 'Yes — you have a Zigbee hub!',
+      sub: 'Full local Zigbee coordinator — advanced platform',
+      body: 'The Hubitat Elevation is a fully local Zigbee coordinator with no cloud dependency. It supports a huge range of Zigbee devices and has a powerful automation engine. It\'s more complex than consumer hubs — aimed at users who want Home Assistant-level control without the Linux command line. A great hub for advanced users.',
+      caps: [
+        { label: 'Full local Zigbee coordinator', type: 'good' },
+        { label: 'No cloud required — ever', type: 'good' },
+        { label: 'Huge device compatibility list', type: 'good' },
+        { label: 'Powerful local automation engine', type: 'good' },
+        { label: 'Steeper learning curve than consumer hubs', type: 'warn' },
+      ],
+      links: [
+        { section: 'Build', icon: '🔨', text: '6 steps to build your first Zigbee network', url: 'https://zigbee.com.au/build/6-steps' },
+        { section: 'Plan', icon: '🗺️', text: 'How to plan your Zigbee network', url: 'https://zigbee.com.au/plan/network-map' },
+        { section: 'Create', icon: '⚡', text: 'Getting started with automations', url: 'https://zigbee.com.au/create' },
+      ]
+    },
+  ],
+};
+
+// ── STATE ──
+let selectedBrand = null;
+let selectedModel = null;
+let step = 1;
+
+// ── STEP INDICATOR ──
+function updateSteps(s) {
+  step = s;
+  const dots = ['dot1','dot2','dot3'];
+  const lines = ['line1','line2'];
+  dots.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-dot';
+    if (i + 1 < s) el.classList.add('done');
+    else if (i + 1 === s) el.classList.add('active');
+  });
+  lines.forEach((id, i) => {
+    const el = document.getElementById(id);
+    el.className = 'step-line';
+    if (i + 1 < s) el.classList.add('done');
+  });
+}
+
+// ── RENDER: BRAND STEP ──
+function renderBrands() {
+  updateSteps(1);
+  const area = document.getElementById('toolArea');
+  area.innerHTML = `
+    <div class="tool-card">
+      <div class="card-eyebrow">Step 1 of 2</div>
+      <div class="card-question">Which brand is your device?</div>
+      <div class="brand-grid">
+        ${brands.map(b => `
+          <button class="brand-btn${selectedBrand === b.id ? ' selected' : ''}"
+            onclick="selectBrand('${b.id}')">
+            <span class="brand-logo">${b.logo}</span>
+            ${b.label}
+          </button>
+        `).join('')}
+      </div>
+    </div>
+  `;
+}
+
+// ── RENDER: MODEL STEP ──
+function renderModels() {
+  updateSteps(2);
+  const brand = brands.find(b => b.id === selectedBrand);
+  const modelList = models[selectedBrand] || [];
+  const dotClass = { yes: 'dot-yes', caveat: 'dot-caveat', no: 'dot-no' };
+  const area = document.getElementById('toolArea');
+  area.innerHTML = `
+    <div class="tool-card">
+      <div class="card-eyebrow">Step 2 of 2 — ${brand.logo} ${brand.label}</div>
+      <div class="card-question">Which device do you have?</div>
+      <div class="model-list">
+        ${modelList.map((m, i) => `
+          <button class="model-btn" onclick="selectModel(${i})">
+            <span class="model-zigbee-dot ${dotClass[m.status]}"></span>
+            <span>${m.name}</span>
+            <span class="model-chevron">→</span>
+          </button>
+        `).join('')}
+      </div>
+      <div class="nav-row">
+        <button class="btn-back" onclick="renderBrands()">← Back to brands</button>
+      </div>
+    </div>
+  `;
+}
+
+// ── RENDER: RESULT ──
+function renderResult(modelIdx) {
+  updateSteps(3);
+  const brand = brands.find(b => b.id === selectedBrand);
+  const m = models[selectedBrand][modelIdx];
+  const bannerClass = { yes: 'banner-yes', caveat: 'banner-caveat', no: 'banner-no' };
+  const icons = { yes: '✅', caveat: '⚠️', no: '❌' };
+
+  const area = document.getElementById('toolArea');
+  area.innerHTML = `
+    <div class="result-card">
+      <div class="result-device-tag">${brand.logo} ${brand.label} — ${m.name}</div>
+
+      <div class="result-status-banner ${bannerClass[m.status]}">
+        <div class="banner-icon">${icons[m.status]}</div>
+        <div class="banner-text-wrap">
+          <div class="banner-headline">${m.headline}</div>
+          <div class="banner-sub">${m.sub}</div>
+        </div>
+      </div>
+
+      <p class="result-body">${m.body}</p>
+
+      <div class="caps-title">At a glance</div>
+      <div class="caps-grid">
+        ${m.caps.map(c => `
+          <span class="cap-chip ${c.type}">
+            ${c.type === 'good' ? '✓' : c.type === 'warn' ? '⚠' : '✕'}
+            ${c.label}
+          </span>
+        `).join('')}
+      </div>
+
+      <div class="divider"></div>
+
+      <div class="nextsteps-title">What to do next</div>
+      <div class="nextsteps-grid">
+        ${m.links.map(l => `
+          <a class="nextstep-link" href="${l.url}" target="_blank" rel="noopener">
+            <span class="nextstep-icon">${l.icon}</span>
+            <span>
+              <span class="nextstep-section">${l.section}</span>
+              ${l.text}
+            </span>
+            <span class="nextstep-arrow">→</span>
+          </a>
+        `).join('')}
+      </div>
+
+      <div class="divider"></div>
+      <div class="btn-row">
+        <button class="btn-secondary" onclick="renderModels()">← Try another ${brand.label} device</button>
+        <button class="btn-secondary" onclick="renderBrands()">↺ Check a different brand</button>
+      </div>
+    </div>
+  `;
+}
+
+function selectBrand(id) {
+  selectedBrand = id;
+  renderModels();
+}
+
+function selectModel(idx) {
+  selectedModel = idx;
+  renderResult(idx);
+}
+
+// ── INIT ──
+renderBrands();
+</script>
+</body>
+</html>
